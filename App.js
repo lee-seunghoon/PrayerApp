@@ -24,9 +24,24 @@ function HomeScreen() { return (<View style={styles.tabScreen}><Text style={styl
 
 // 2. '기도관리' 탭 화면 (이 부분만 수정됩니다)
 function PrayerManagementScreen() {
-  const [prayers, setPrayers] = useState([
-    { id: '1', text: '가족의 건강을 위해', status: PRAYER_STATUS.PRAYING },
-    { id: '2', text: '새로운 프로젝트 성공을 위해', status: PRAYER_STATUS.ANSWERED },
+  const [projects, setProjects] = useState([
+    {
+      id: 'proj1',
+      title: '8월 가족 기도',
+      createdAt: new Date(2025, 7, 1), // 월은 0부터 시작하므로 7은 8월입니다.
+      items: [
+        { id: 'item1-1', text: '아버지 건강 회복을 위해', status: PRAYER_STATUS.PRAYING },
+        { id: 'item1-2', text: '동생 취업 준비 잘 되도록', status: PRAYER_STATUS.PENDING },
+      ],
+    },
+    {
+      id: 'proj2',
+      title: '개인적인 성장',
+      createdAt: new Date(2025, 6, 28),
+      items: [
+        { id: 'item2-1', text: 'React Native 공부 꾸준히 하기', status: PRAYER_STATUS.ANSWERED },
+      ],
+    },
   ]);
   const [selectedPrayer, setSelectedPrayer] = useState(null);
   
@@ -41,16 +56,16 @@ function PrayerManagementScreen() {
 
   const handleAddNewPrayer = () => {
     if (newPrayerText.length === 0) return;
-    setPrayers(currentPrayers => [ ...currentPrayers, { id: Math.random().toString(), text: newPrayerText, status: newPrayerStatus }, ]);
+    setProjects(currentPrayers => [ ...currentPrayers, { id: Math.random().toString(), text: newPrayerText, status: newPrayerStatus }, ]);
     setAddModalVisible(false);
     setNewPrayerText('');
     setNewPrayerStatus(PRAYER_STATUS.PRAYING);
   };
 
   // --- (나머지 CRUD 및 모달 제어 함수들은 이전과 동일) ---
-  const removePrayerHandler = () => { if (!selectedPrayer) return; setPrayers(currentPrayers => currentPrayers.filter((prayer) => prayer.id !== selectedPrayer.id)); setActionModalVisible(false); };
-  const updatePrayerStatus = (newStatus) => { setPrayers(currentPrayers => currentPrayers.map(prayer => prayer.id === selectedPrayer.id ? { ...prayer, status: newStatus } : prayer )); setStatusModalVisible(false); };
-  const handleUpdatePrayerText = () => { if (!selectedPrayer || editText.length === 0) return; setPrayers(currentPrayers => currentPrayers.map(prayer => prayer.id === selectedPrayer.id ? { ...prayer, text: editText } : prayer )); setEditModalVisible(false); };
+  const removePrayerHandler = () => { if (!selectedPrayer) return; setProjects(currentPrayers => currentPrayers.filter((prayer) => prayer.id !== selectedPrayer.id)); setActionModalVisible(false); };
+  const updatePrayerStatus = (newStatus) => { setProjects(currentPrayers => currentPrayers.map(prayer => prayer.id === selectedPrayer.id ? { ...prayer, status: newStatus } : prayer )); setStatusModalVisible(false); };
+  const handleUpdatePrayerText = () => { if (!selectedPrayer || editText.length === 0) return; setProjects(currentPrayers => currentPrayers.map(prayer => prayer.id === selectedPrayer.id ? { ...prayer, text: editText } : prayer )); setEditModalVisible(false); };
   const openStatusModal = (prayer) => { setSelectedPrayer(prayer); setStatusModalVisible(true); };
   const openActionModal = (prayer) => { setSelectedPrayer(prayer); setActionModalVisible(true); };
   const openEditModal = () => { if (!selectedPrayer) return; setEditText(selectedPrayer.text); setActionModalVisible(false); setEditModalVisible(true); };
