@@ -71,25 +71,41 @@ function PrayerManagementScreen() {
   const openEditModal = () => { if (!selectedPrayer) return; setEditText(selectedPrayer.text); setActionModalVisible(false); setEditModalVisible(true); };
   const openAddModal = () => { setNewPrayerText(''); setNewPrayerStatus(PRAYER_STATUS.PRAYING); setAddModalVisible(true); }
 
-  const renderPrayerItem = ({ item }) => (
-    <View style={styles.prayerItem}>
-      <View style={styles.prayerInfo}>
-        <Text style={styles.prayerText}>{item.text}</Text>
-        <TouchableOpacity onPress={() => openStatusModal(item)}>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-            <Text style={styles.statusText}>{item.status}</Text>
-          </View>
+  // 1. renderPrayerItem 함수를 아래 코드로 교체
+  const renderProjectItem = ({ item: project }) => (
+    // project.id를 인자로 받는 openDetailModal 함수는 4단계에서 만들 예정입니다.
+    <TouchableOpacity style={styles.projectCard} onPress={() => { /* openDetailModal(project) */ }}>
+      <View style={styles.projectCardHeader}>
+        <Text style={styles.projectCardTitle}>{project.title}</Text>
+        {/* project.id를 인자로 받는 openActionModal 함수는 그대로 사용합니다. */}
+        <TouchableOpacity onPress={() => openActionModal(project)} style={styles.menuButton}>
+          <Ionicons name="ellipsis-horizontal" size={24} color="gray" />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={() => openActionModal(item)} style={styles.menuButton}>
-        <Ionicons name="ellipsis-horizontal" size={24} color="gray" />
-      </TouchableOpacity>
-    </View>
+      <View style={styles.projectCardBody}>
+        {/* 기도제목은 최대 3개까지만 미리보기로 보여줍니다. */}
+        {project.items.slice(0, 3).map(item => (
+          <View key={item.id} style={styles.itemPreview}>
+            <View style={[styles.itemStatusIndicator, { backgroundColor: getStatusColor(item.status) }]} />
+            <Text style={styles.itemPreviewText} numberOfLines={1}>{item.text}</Text>
+          </View>
+        ))}
+        {project.items.length > 3 && <Text style={styles.moreItemsText}>...외 {project.items.length - 3}개 더보기</Text>}
+      </View>
+      <Text style={styles.projectCardDate}>
+        생성일: {new Date(project.createdAt).toLocaleDateString()}
+      </Text>
+    </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList data={prayers} renderItem={renderPrayerItem} keyExtractor={(item) => item.id} style={styles.listContainer} ListEmptyComponent={() => (<View style={styles.emptyListContainer}><Text style={styles.emptyListText}>아직 기도제목이 없네요!</Text><Text style={styles.emptyListText}>아래 + 버튼을 눌러 추가해보세요.</Text></View>)} />
+      <FlatList
+        data={projects} // 'prayers'를 'projects'로 변경
+        renderItem={renderProjectItem} // 'renderPrayerItem'을 'renderProjectItem'으로 변경
+        keyExtractor={(item) => item.id}
+        style={styles.listContainer} 
+        ListEmptyComponent={() => (<View style={styles.emptyListContainer}><Text style={styles.emptyListText}>아직 기도제목이 없네요!</Text><Text style={styles.emptyListText}>아래 + 버튼을 눌러 추가해보세요.</Text></View>)} />
       <TouchableOpacity style={styles.fab} onPress={openAddModal}>
         <Ionicons name="add" size={30} color="white" />
       </TouchableOpacity>
@@ -167,8 +183,60 @@ const styles = StyleSheet.create({
   listContainer: { flex: 1 },
   emptyListContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 50 },
   emptyListText: { fontSize: 16, color: 'gray' },
-  prayerItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 15, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  prayerInfo: { flex: 1, marginRight: 10 },
+  projectCard: {
+  backgroundColor: '#ffffe0', // 포스트잇 느낌의 연노랑색
+  borderRadius: 8,
+  padding: 15,
+  marginVertical: 8,
+  marginHorizontal: 10,
+  elevation: 3,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.2,
+  shadowRadius: 2,
+  },
+  projectCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0c0',
+    paddingBottom: 10,
+    marginBottom: 10,
+  },
+  projectCardTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  projectCardBody: {
+    minHeight: 50,
+  },
+  itemPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  itemStatusIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  itemPreviewText: {
+    fontSize: 14,
+    color: '#555',
+  },
+  moreItemsText: {
+    fontSize: 12,
+    color: 'gray',
+    marginTop: 5,
+  },
+  projectCardDate: {
+    fontSize: 12,
+    color: 'gray',
+    marginTop: 10,
+    textAlign: 'right',
+  },
   prayerText: { fontSize: 16, marginBottom: 8 },
   statusBadge: { paddingVertical: 4, paddingHorizontal: 8, borderRadius: 10, alignSelf: 'flex-start' },
   statusText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
