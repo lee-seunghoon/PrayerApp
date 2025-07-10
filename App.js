@@ -139,6 +139,11 @@ const addNewItemInput = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>기도관리</Text>
+      </View>
+
       <FlatList
         data={projects} // 'prayers'를 'projects'로 변경
         renderItem={renderProjectItem} // 'renderPrayerItem'을 'renderProjectItem'으로 변경
@@ -307,6 +312,16 @@ const styles = StyleSheet.create({
     color: 'tomato',
     marginLeft: 5,
     fontSize: 16,
+  },
+  header: {
+    padding: 15,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   prayerText: { fontSize: 16, marginBottom: 8 },
   statusBadge: { paddingVertical: 4, paddingHorizontal: 8, borderRadius: 10, alignSelf: 'flex-start' },
