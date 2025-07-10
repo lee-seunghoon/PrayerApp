@@ -154,9 +154,22 @@ const addNewItemInput = () => {
         keyExtractor={(item) => item.id}
         style={styles.listContainer} 
         ListEmptyComponent={() => (<View style={styles.emptyListContainer}><Text style={styles.emptyListText}>아직 기도제목이 없네요!</Text><Text style={styles.emptyListText}>아래 + 버튼을 눌러 추가해보세요.</Text></View>)} />
-      <TouchableOpacity style={styles.fab} onPress={openAddModal}>
-        <Ionicons name="add" size={30} color="white" />
-      </TouchableOpacity>
+
+      <View style={styles.bottomBarContainer}>
+        {/* 범례 부분 */}
+        <View style={styles.legendContainer}>
+          {Object.entries(PRAYER_STATUS).map(([key, value]) => (
+            <View key={key} style={styles.legendItem}>
+              <View style={[styles.itemStatusIndicator, { backgroundColor: getStatusColor(value) }]} />
+              <Text style={styles.legendText}>{value}</Text>
+            </View>
+          ))}
+        </View>
+        {/* + 버튼 부분 */}
+        <TouchableOpacity style={styles.fab} onPress={openAddModal}>
+          <Ionicons name="add" size={30} color="white" />
+        </TouchableOpacity>
+      </View>
 
       {/* --- 모달 창들 --- */}
       {/* 1. 기도 추가 모달 (프로젝트 생성용) */}
@@ -327,11 +340,46 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
+  // 1. 새로운 컨테이너 스타일 추가
+  bottomBarContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+
+  // 2. 기존 legendContainer 스타일 수정
+  legendContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15, // 아이템 간 간격
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  legendText: {
+    fontSize: 12,
+    color: '#333',
+  },
+
   prayerText: { fontSize: 16, marginBottom: 8 },
   statusBadge: { paddingVertical: 4, paddingHorizontal: 8, borderRadius: 10, alignSelf: 'flex-start' },
   statusText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
   menuButton: { padding: 5 },
-  fab: { borderWidth: 1, borderColor: 'rgba(0,0,0,0.2)', alignItems: 'center', justifyContent: 'center', width: 60, height: 60, position: 'absolute', bottom: 20, right: 20, backgroundColor: 'tomato', borderRadius: 30, elevation: 8, shadowColor: '#000', shadowRadius: 5, shadowOpacity: 0.3, shadowOffset: { height: 2, width: 0 } },
+  // 3. 기존 fab 스타일 수정 (position: 'absolute' 속성 제거)
+  fab: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 55,
+    height: 55,
+    backgroundColor: 'tomato',
+    borderRadius: 30,
+    elevation: 4,
+  },
   
   // <<-- 이 부분이 추가/수정되었습니다.
   keyboardAvoidingContainer: { flex: 1 },
