@@ -57,12 +57,12 @@ function PrayerManagementScreen() {
   const [newItems, setNewItems] = useState(['']);
 
   // 기존 handleAddNewPrayer를 아래 코드로 대체
-const handleAddProject = () => {
-  // 제목이 없으면 실행하지 않음
-  if (newProjectTitle.trim().length === 0) {
-    alert('프로젝트 제목을 입력해주세요.');
-    return;
-  }
+  const handleAddProject = () => {
+    // 제목이 없으면 실행하지 않음
+    if (newProjectTitle.trim().length === 0) {
+      alert('프로젝트 제목을 입력해주세요.');
+      return;
+    }
   
   // 비어있지 않은 기도제목만 필터링하여 객체로 변환
   const finalItems = newItems
@@ -81,7 +81,7 @@ const handleAddProject = () => {
     items: finalItems,
   };
 
-  setProjects(currentProjects => [newProject, ...currentProjects]);
+  setProjects(currentProjects => [...currentProjects, newProject]);
   setAddModalVisible(false); // 모달 닫기
 };
 
