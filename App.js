@@ -132,7 +132,11 @@ const addNewItemInput = () => {
         {project.items.length > 3 && <Text style={styles.moreItemsText}>...외 {project.items.length - 3}개 더보기</Text>}
       </View>
       <Text style={styles.projectCardDate}>
-        생성일: {new Date(project.createdAt).toLocaleDateString()}
+        생성일: {new Intl.DateTimeFormat('ko-KR', {
+                year: 'numeric', month: 'numeric', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: false,
+              }).format(new Date(project.createdAt))}
       </Text>
     </TouchableOpacity>
   );
