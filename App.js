@@ -51,16 +51,50 @@ function PrayerManagementScreen() {
   const [addModalVisible, setAddModalVisible] = useState(false);
 
   const [editText, setEditText] = useState('');
-  const [newPrayerText, setNewPrayerText] = useState('');
-  const [newPrayerStatus, setNewPrayerStatus] = useState(PRAYER_STATUS.PRAYING);
+  // 기존 newPrayerText, newPrayerStatus State는 삭제
+  const [newProjectTitle, setNewProjectTitle] = useState('');
+  // 사용자가 입력 중인 기도제목 목록을 관리 (초기값은 빈 제목 1개)
+  const [newItems, setNewItems] = useState(['']);
 
-  const handleAddNewPrayer = () => {
-    if (newPrayerText.length === 0) return;
-    setProjects(currentPrayers => [ ...currentPrayers, { id: Math.random().toString(), text: newPrayerText, status: newPrayerStatus }, ]);
-    setAddModalVisible(false);
-    setNewPrayerText('');
-    setNewPrayerStatus(PRAYER_STATUS.PRAYING);
+  // 기존 handleAddNewPrayer를 아래 코드로 대체
+const handleAddProject = () => {
+  // 제목이 없으면 실행하지 않음
+  if (newProjectTitle.trim().length === 0) {
+    alert('프로젝트 제목을 입력해주세요.');
+    return;
+  }
+  
+  // 비어있지 않은 기도제목만 필터링하여 객체로 변환
+  const finalItems = newItems
+    .map(text => text.trim())
+    .filter(text => text.length > 0)
+    .map(text => ({
+      id: `item-${Date.now()}-${Math.random()}`,
+      text: text,
+      status: PRAYER_STATUS.PRAYING, // 기본 상태는 '기도중'
+    }));
+
+  const newProject = {
+    id: `proj-${Date.now()}`,
+    title: newProjectTitle,
+    createdAt: new Date(),
+    items: finalItems,
   };
+
+  setProjects(currentProjects => [newProject, ...currentProjects]);
+  setAddModalVisible(false); // 모달 닫기
+};
+
+// 사용자가 기도제목 입력칸에서 엔터를 누르거나, 새 칸을 추가할 때 사용될 함수
+const handleItemChange = (text, index) => {
+  const updatedItems = [...newItems];
+  updatedItems[index] = text;
+  setNewItems(updatedItems);
+};
+
+const addNewItemInput = () => {
+  setNewItems([...newItems, '']);
+};
 
   // --- (나머지 CRUD 및 모달 제어 함수들은 이전과 동일) ---
   const removePrayerHandler = () => { if (!selectedPrayer) return; setProjects(currentPrayers => currentPrayers.filter((prayer) => prayer.id !== selectedPrayer.id)); setActionModalVisible(false); };
@@ -69,7 +103,12 @@ function PrayerManagementScreen() {
   const openStatusModal = (prayer) => { setSelectedPrayer(prayer); setStatusModalVisible(true); };
   const openActionModal = (prayer) => { setSelectedPrayer(prayer); setActionModalVisible(true); };
   const openEditModal = () => { if (!selectedPrayer) return; setEditText(selectedPrayer.text); setActionModalVisible(false); setEditModalVisible(true); };
-  const openAddModal = () => { setNewPrayerText(''); setNewPrayerStatus(PRAYER_STATUS.PRAYING); setAddModalVisible(true); }
+  const openAddModal = () => {
+    // 새 프로젝트 제목과 기도제목 목록을 초기화합니다.
+    setNewProjectTitle('');
+    setNewItems(['']); // 기도제목 입력칸을 빈칸 1개로 초기화
+    setAddModalVisible(true);
+  };
 
   // 1. renderPrayerItem 함수를 아래 코드로 교체
   const renderProjectItem = ({ item: project }) => (
@@ -111,38 +150,50 @@ function PrayerManagementScreen() {
       </TouchableOpacity>
 
       {/* --- 모달 창들 --- */}
-      {/* 1. 기도 추가 모달 (수정됨) */}
+      {/* 1. 기도 추가 모달 (프로젝트 생성용) */}
       <Modal visible={addModalVisible} transparent={true} animationType="slide">
-        {/* KeyboardAvoidingView로 전체를 감싸줍니다. */}
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-          style={styles.keyboardAvoidingContainer}
-        >
-          {/* 배경을 누르면 키보드가 사라지고 모달도 닫힙니다. */}
-          <Pressable style={styles.modalBackdrop} onPress={() => { Keyboard.dismiss()}}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardAvoidingContainer}>
+          <Pressable style={styles.modalBackdrop} onPress={Keyboard.dismiss}>
             <Pressable style={styles.modalView}>
-              <Text style={styles.modalTitle}>새 기도제목 추가</Text>
+              <Text style={styles.modalTitle}>새 기도 프로젝트</Text>
+              
+              {/* 제목 입력칸 */}
               <TextInput
-                placeholder="기도제목을 입력하세요..."
+                placeholder="제목"
                 style={styles.editInput}
-                onChangeText={setNewPrayerText}
-                value={newPrayerText}
+                onChangeText={setNewProjectTitle}
               />
-              <Text style={styles.statusSelectTitle}>상태 선택</Text>
-              <View style={styles.statusSelectContainer}>
-                {Object.values(PRAYER_STATUS).map(status => (
-                  <TouchableOpacity 
-                    key={status} 
-                    style={[ styles.statusSelectItem, { backgroundColor: getStatusColor(status) }, newPrayerStatus === status && styles.statusSelectedItem_Selected ]} 
-                    onPress={() => setNewPrayerStatus(status)}
-                  >
-                    <Text style={styles.statusSelectItemText}>{status}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              
+              {/* 기도제목 동적 입력칸 */}
+              <FlatList
+                data={newItems}
+                keyExtractor={(item, index) => `newItem-${index}`}
+                renderItem={({ item, index }) => (
+                  <TextInput
+                    placeholder={`기도제목 ${index + 1}`}
+                    style={styles.itemInput}
+                    value={item}
+                    onChangeText={(text) => handleItemChange(text, index)}
+                    // 엔터 누르면 다음 칸으로 포커스 이동 (마지막 칸에서는 새 입력칸 추가)
+                    onSubmitEditing={() => {
+                      if (index === newItems.length - 1) {
+                        addNewItemInput();
+                      }
+                    }}
+                  />
+                )}
+                // FlatList 스타일링
+                style={{ maxHeight: 200, width: '100%' }}
+              />
+              
+              <TouchableOpacity style={styles.addItemButton} onPress={addNewItemInput}>
+                <Ionicons name="add-circle-outline" size={24} color="tomato" />
+                <Text style={styles.addItemButtonText}>기도제목 추가하기</Text>
+              </TouchableOpacity>
+
               <View style={styles.editButtonContainer}>
                 <Button title="취소" color="gray" onPress={() => setAddModalVisible(false)} />
-                <Button title="저장" onPress={handleAddNewPrayer} />
+                <Button title="생성" onPress={handleAddProject} />
               </View>
             </Pressable>
           </Pressable>
@@ -236,6 +287,26 @@ const styles = StyleSheet.create({
     color: 'gray',
     marginTop: 10,
     textAlign: 'right',
+  },
+  itemInput: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 5,
+    padding: 10,
+    fontSize: 16,
+    width: '100%',
+    marginBottom: 10,
+  },
+  addItemButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    alignSelf: 'center',
+  },
+  addItemButtonText: {
+    color: 'tomato',
+    marginLeft: 5,
+    fontSize: 16,
   },
   prayerText: { fontSize: 16, marginBottom: 8 },
   statusBadge: { paddingVertical: 4, paddingHorizontal: 8, borderRadius: 10, alignSelf: 'flex-start' },
