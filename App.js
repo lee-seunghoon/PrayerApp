@@ -23,17 +23,51 @@ const getStatusColor = (status) => {
 };
 function HomeScreen() { return (<View style={styles.tabScreen}><Text style={styles.tabScreenText}>환영합니다!</Text><Text>하단 탭을 눌러 이동하세요.</Text></View>); }
 
-function ProjectDetailScreen({ route, navigation }) {
-  // route.params 로 이전 화면에서 넘겨준 데이터를 받습니다.
+// 기도제목 상세화면 UI
+function ProjectDetailScreen({ route, navigation, projects, openEditTitleModal }) {
   const { projectId } = route.params;
+  const project = projects.find(p => p.id === projectId);
 
-  // UI는 아래 4단계에서 채울 것입니다.
+  if (!project) {
+    return (
+      <View style={styles.tabScreen}><Text>프로젝트를 찾을 수 없습니다.</Text></View>
+    );
+  }
+
+  // 각 기도제목 항목을 렌더링하는 함수
+  const renderDetailItem = ({ item }) => (
+    <View style={styles.detailItem}>
+      {/* 1. 상태 뱃지를 텍스트 앞으로 이동시킵니다. */}
+      <TouchableOpacity>
+        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+          <Text style={styles.statusText}>{item.status}</Text>
+        </View>
+      </TouchableOpacity>
+
+      {/* 2. 텍스트를 뱃지 뒤로 이동시킵니다. */}
+      <Text style={styles.detailItemText}>{item.text}</Text>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text>프로젝트 상세 화면</Text>
-      <Text>프로젝트 ID: {projectId}</Text>
-      {/* 뒤로가기 버튼 */}
-      <Button title="목록으로 돌아가기" onPress={() => navigation.goBack()} />
+      {/* 포스트잇 형태의 카드 */}
+      <View style={styles.detailCard}>
+        <View style={styles.detailHeader}>
+          <Text style={styles.detailTitle}>{project.title}</Text>
+          {/* 제목 수정 버튼 */}
+          <TouchableOpacity onPress={() => openEditTitleModal(project)}>
+            <Ionicons name="create-outline" size={28} color="#555" />
+          </TouchableOpacity>
+        </View>
+
+        <FlatList
+          data={project.items}
+          renderItem={renderDetailItem}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={() => <Text style={styles.detailSectionTitle}>기도 제목</Text>}
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -384,10 +418,62 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flex: 1,
   },
-
+  detailCard: {
+    flex: 1,
+    backgroundColor: '#ffffe0',
+    margin: 15,
+    borderRadius: 15,
+    padding: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  detailHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0c0',
+  },
+  detailTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    flex: 1, // 제목이 길어지면 버튼을 밀어내지 않고 줄바꿈 되도록
+  },
+  detailSectionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'gray',
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start', // 'center'에서 'flex-start'로 변경하여 줄바꿈 시 상단 정렬
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0c0',
+  },
+  detailItemText: {
+    fontSize: 16,
+    flex: 1, // 남은 공간을 모두 차지하도록 유지
+    marginLeft: 12, // 뱃지와 텍스트 사이에 간격을 줍니다.
+  },
+  statusBadge: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  statusText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
   prayerText: { fontSize: 16, marginBottom: 8 },
-  statusBadge: { paddingVertical: 4, paddingHorizontal: 8, borderRadius: 10, alignSelf: 'flex-start' },
-  statusText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
   menuButton: { padding: 5 },
   // 3. 기존 fab 스타일 수정 (position: 'absolute' 속성 제거)
   fab: {
